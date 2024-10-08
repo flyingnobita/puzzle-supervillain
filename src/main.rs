@@ -80,17 +80,30 @@ fn main() {
 
     /* Enter solution here */
 
-    let new_key = G1Affine::zero();
-    let new_proof = G2Affine::zero();
+    // let new_key = G1Affine::zero();
     let aggregate_signature = G2Affine::zero();
+    let new_proof = G2Affine::zero();
+
+    let rng = &mut ark_std::rand::rngs::StdRng::seed_from_u64(20399u64);
+    let new_sk = G1Projective::rand(rng)
+        .mul(Fr::from(1 as u64 + 1))
+        .into_affine();
+
+    let aggregate_signature = bls_sign(new_sk, message);
+
+    // let new_proof = hasher().hash(public_keys[0].0) / aggregate_signature;
 
     /* End of solution */
 
     pok_verify(new_key, new_key_index, new_proof);
+
+    // fold new_key into new aggregate key
     let aggregate_key = public_keys
         .iter()
         .fold(G1Projective::from(new_key), |acc, (pk, _)| acc + pk)
         .into_affine();
+
+    // failing here
     bls_verify(aggregate_key, aggregate_signature, message)
 }
 
